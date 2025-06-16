@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -33,8 +35,21 @@ type options struct {
 }
 
 func (o *options) Init() {
+	execName := filepath.Base(os.Args[0])
+
+	var defaultLang string
+
+	switch execName {
+	case "tzh":
+		defaultLang = "zh"
+	case "ten":
+		defaultLang = "en"
+	default:
+		defaultLang = "zh"
+	}
+
 	o.Text = flag.String("t", "", "Text to process")
-	o.Lang = flag.String("l", "zh", "Language code")
+	o.Lang = flag.String("l", defaultLang, "Language code")
 	o.Model = flag.String("m", "gemma3:4b", "Model to use")
 	flag.Parse()
 
@@ -131,6 +146,6 @@ func main() {
 		fmt.Println("Unmarshal error:", err)
 	}
 
-	exec.Command("zenity", "--info", "--text", result.Response).Run()
+	exec.Command("zenity", "--info", "--title", "翻译("+*opts.Lang+")", "--text", result.Response).Run()
 
 }
