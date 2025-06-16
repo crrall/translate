@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os/exec"
 	"strings"
 	"time"
 )
@@ -25,19 +26,34 @@ type OllamaResponse struct {
 	EvalDuration       int64     `json:"eval_duration"`
 }
 
-func main() {
-	// 获取命名参数
-	text := flag.String("t", "", "")
-	lang := flag.String("l", "zh", "")
-	model := flag.String("m", "gemma3:4b", "")
+type options struct {
+	Text  *string
+	Lang  *string
+	Model *string
+}
 
+func (o *options) Init() {
+	o.Text = flag.String("t", "", "Text to process")
+	o.Lang = flag.String("l", "zh", "Language code")
+	o.Model = flag.String("m", "gemma3:4b", "Model to use")
 	flag.Parse()
 
-	if *text == "" && flag.NArg() > 0 {
-		*text = strings.Join(flag.Args(), " ")
+	if *o.Text == "" && flag.NArg() > 0 {
+		*o.Text = strings.Join(flag.Args(), " ")
 	}
+}
 
-	// 构建prompt
+func (o *options) GetText() {
+	if *o.Text == "" {
+		cmd := exec.Command("xclip", "-o", "-selection", "primary")
+		out, err := cmd.Output()
+		if err == nil {
+			*o.Text = string(out)
+		}
+	}
+}
+
+func BuildPrompt(lang *string, text *string) string {
 	var builder strings.Builder
 	builder.WriteString("Translate the following into ")
 	builder.WriteString(*lang)
@@ -46,7 +62,29 @@ func main() {
 	builder.WriteString("\n\"")
 	builder.WriteString(*text)
 	builder.WriteString("\"")
-	prompt := builder.String()
+	return builder.String()
+}
+
+type params struct {
+	Model  string `json:"model"`
+	Prompt string `json:"prompt"`
+	Stream bool   `json:"stream"`
+}
+
+func (p *params) BuildParams(model string, prompt string, stream bool) {
+	p.Model = model
+	p.Prompt = prompt
+	p.Stream = stream
+}
+
+func main() {
+	// 获取命名参数
+	opts := &options{}
+	opts.Init()
+	opts.GetText()
+
+	// 构建prompt
+	prompt := BuildPrompt(opts.Lang, opts.Text)
 
 	// 封装请求参数
 	data := struct {
@@ -54,7 +92,7 @@ func main() {
 		Prompt string `json:"prompt"`
 		Stream bool   `json:"stream"`
 	}{
-		Model:  *model,
+		Model:  *opts.Model,
 		Prompt: prompt,
 		Stream: false,
 	}
@@ -93,6 +131,6 @@ func main() {
 		fmt.Println("Unmarshal error:", err)
 	}
 
-	fmt.Println(result.Response)
+	exec.Command("zenity", "--info", "--text", result.Response).Run()
 
 }
