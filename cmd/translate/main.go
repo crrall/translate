@@ -46,5 +46,9 @@ func main() {
 		return
 	}
 
-	exec.Command("zenity", "--info", "--title", "翻译("+*opts.Lang+")", "--text", result.Response).Run()
+	if *opts.Cli {
+		fmt.Println(result.Response)
+	} else {
+		exec.Command("zenity", "--info", "--title", "翻译("+*opts.Lang+")", "--text", result.Response).Run()
+	}
 }

@@ -12,6 +12,7 @@ type Options struct {
 	Text  *string
 	Lang  *string
 	Model *string
+	Cli   *bool
 }
 
 func (o *Options) Init() {
@@ -29,6 +30,9 @@ func (o *Options) Init() {
 	if *o.Text == "" && flag.NArg() > 0 {
 		*o.Text = strings.Join(flag.Args(), " ")
 	}
+
+	o.Cli = new(bool)
+	*o.Cli = true
 }
 
 func (o *Options) GetText() {
@@ -36,6 +40,7 @@ func (o *Options) GetText() {
 		cmd := exec.Command("xclip", "-o", "-selection", "primary")
 		if out, err := cmd.Output(); err == nil {
 			*o.Text = string(out)
+			*o.Cli = false
 		}
 	}
 }
