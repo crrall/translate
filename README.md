@@ -35,19 +35,11 @@ ollama run gemma3:4b
 ```bash
 git clone https://github.com/crrall/translate.git
 cd translate
-sudo mv ./translate /usr/bin/translate
+sudo mv ./ten /usr/bin/ten # 翻译成英文
+sudo mv ./tzh /usr/bin/tzh # 翻译成中文
 ```
 
 > 将主程序移动到系统路径中，便于后续通过快捷命令调用。
-
-### 4. 创建快捷命令（软链接）
-
-```bash
-sudo ln -s /usr/bin/translate /usr/bin/ten  # 翻译成英文
-sudo ln -s /usr/bin/translate /usr/bin/tzh  # 翻译成中文
-```
-
-你现在可以通过 `ten` 或 `tzh` 命令来直接翻译剪贴板内容。
 
 ---
 
