@@ -6,9 +6,9 @@ import (
 	"io"
 	"os/exec"
 
-	"translate/internal/api"
-	"translate/internal/config"
-	"translate/internal/utils"
+	"github.com/crrall/translate/internal/api"
+	"github.com/crrall/translate/internal/config"
+	"github.com/crrall/translate/internal/utils"
 )
 
 func main() {
